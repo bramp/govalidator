@@ -1,33 +1,26 @@
 package govalidator
 
-import (
-	"errors"
-)
-
-var (
-	ErrUnknownKey = errors.New("unknown key")
-)
+var ignoreValue struct{} // Dummy value to indicate do not use the returned value
 
 type mapValidator struct {
-	validators    map[string]interfaceValidator
+	validators    map[string]genericMapValidator
 	failOnUnknown bool
 }
 
-type mapStringValidator struct {
-	root      *mapValidator
-	key       string
-	validator StringValidator
+type mapValidatorEntry struct {
+	root     *mapValidator
+	key      string
+	required bool
+	defaut   interface{}
 }
 
-type mapStringIntValidator struct {
-	root      *mapValidator
-	key       string
-	validator StringIntValidator
+func NewMapValidatorEntry(root *mapValidator, key string) mapValidatorEntry {
+	return mapValidatorEntry{root, key, false, ignoreValue}
 }
 
 func NewMapValidator() MapValidator {
 	return &mapValidator{
-		map[string]interfaceValidator{},
+		map[string]genericMapValidator{},
 		false,
 	}
 }
@@ -38,79 +31,58 @@ func (v *mapValidator) FailOnUnknown() MapValidator {
 }
 
 func (v *mapValidator) Key(key string) MapStringValidator {
-	validator := &mapStringValidator{v, key, NewStringValidator()}
+	validator := NewMapStringValidator(v, key)
 	v.validators[key] = validator
 	return validator
 }
 
-// For strings
-func (v *mapStringValidator) TrimSpace() MapStringValidator {
-	v.validator = v.validator.TrimSpace()
-	return v
+func (e *mapValidatorEntry) Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error) {
+	return e.root.Validate(input)
 }
 
-func (v *mapStringValidator) NotEmpty() MapStringValidator {
-	v.validator = v.validator.NotEmpty()
-	return v
+func (e *mapValidatorEntry) validateMissing() (interface{}, []error) {
+	if e.required {
+		return ignoreValue, []error{ErrRequiredKeyMissing}
+	}
+	return e.defaut, nil
 }
 
-func (v *mapStringValidator) Regex(regex string) MapStringValidator {
-	v.validator = v.validator.Regex(regex)
-	return v
-}
+func (v *mapValidator) Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error) {
 
-func (v *mapStringValidator) AsInt() MapStringIntValidator {
-	validator := &mapStringIntValidator{v.root, v.key, v.validator.AsInt()}
-	validator.root.validators[v.key] = validator
-	return validator
-}
+	// TODO check that all the default values actually validate, and panic on first run if they don't.
 
-func (v *mapStringValidator) validateInterface(input interface{}) (interface{}, []error) {
-	return v.validator.Validate(input.(string))
-}
+	errs := make(map[string][]error)
 
-func (v *mapStringValidator) Key(key string) MapStringValidator {
-	return v.root.Key(key)
-}
+	// Find missing keys, so we can fail/set defaults
+	for key, validator := range v.validators {
+		if _, found := input[key]; !found {
+			value, new_errs := validator.validateMissing()
+			if value != ignoreValue {
+				input[key] = value
+			}
+			if new_errs != nil {
+				errs[key] = append(errs[key], new_errs...)
+			}
+		}
+	}
 
-func (v *mapStringValidator) Validate(input map[string]interface{}) (map[string]interface{}, []error) {
-	return v.root.Validate(input)
-}
-
-func (v *mapStringIntValidator) Range(min, max int) MapStringIntValidator {
-	v.validator = v.validator.Range(min, max)
-	return v
-}
-
-func (v *mapStringIntValidator) validateInterface(input interface{}) (interface{}, []error) {
-	return v.validator.Validate(input.(string))
-}
-
-func (v *mapStringIntValidator) Key(key string) MapStringValidator {
-	return v.root.Key(key)
-}
-
-func (v *mapStringIntValidator) Validate(input map[string]interface{}) (map[string]interface{}, []error) {
-	return v.root.Validate(input)
-}
-
-func (v *mapValidator) Validate(input map[string]interface{}) (map[string]interface{}, []error) {
-	errs := make([]error, 0)
+	// Now validate all values
 	for key, value := range input {
 		validator, found := v.validators[key]
 		if found {
-			value, new_errs := validator.validateInterface(value)
-
-			input[key] = value
-			errs = append(errs, new_errs...)
+			value, new_errs := validator.validate(value)
+			if value != ignoreValue {
+				input[key] = value
+			}
+			if new_errs != nil {
+				errs[key] = append(errs[key], new_errs...)
+			}
 
 		} else if v.failOnUnknown {
-			errs = append(errs, ErrUnknownKey)
+			errs[key] = append(errs[key], ErrUnknownKey)
 			delete(input, key)
 		}
 	}
 
 	return input, errs
 }
-
-
