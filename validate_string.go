@@ -1,14 +1,7 @@
 package govalidator
 
 import (
-	"errors"
-	"strconv"
 	"strings"
-)
-
-var (
-	ErrEmpty = errors.New("input is empty")
-	ErrNotAInteger = errors.New("input can not be converted to a integer")
 )
 
 type stringValidator struct {
