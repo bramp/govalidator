@@ -27,6 +27,11 @@ func (v *mapStringValidator) Regex(regex string) MapStringValidator {
 	return v
 }
 
+func (v *mapStringValidator) Func(f StringValidatorFunc) MapStringValidator {
+	v.validator = v.validator.Func(f)
+	return v
+}
+
 func (v *mapStringValidator) AsInt() MapStringIntValidator {
 	validator := NewMapStringIntValidator(v.mapValidatorEntry, v.validator.AsInt())
 	validator.root.validators[v.key] = validator
@@ -37,10 +42,6 @@ func (v *mapStringValidator) AsBool() MapStringBoolValidator {
 	validator := NewMapStringBoolValidator(v.root, v.key, v.validator.AsBool())
 	validator.root.validators[v.key] = validator
 	return validator
-}
-
-func (v *mapStringValidator) Key(key string) MapStringValidator {
-	return v.root.Key(key)
 }
 
 func (v *mapStringValidator) Required() MapStringValidator {

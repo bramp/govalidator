@@ -22,10 +22,6 @@ func (v *mapStringBoolValidator) False(f string) MapStringBoolValidator {
 	return v
 }
 
-func (v *mapStringBoolValidator) Key(key string) MapStringValidator {
-	return v.root.Key(key)
-}
-
 func (v *mapStringBoolValidator) validate(input interface{}) (interface{}, []error) {
 	s, ok := input.(string)
 	if ok || input == nil {

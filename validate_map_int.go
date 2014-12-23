@@ -1,30 +1,26 @@
 package govalidator
 
-type mapStringIntValidator struct {
+type mapIntValidator struct {
 	mapValidatorEntry
-	validator StringIntValidator
+	validator IntValidator
 }
 
-func NewMapStringIntValidator(entry mapValidatorEntry, validator StringIntValidator) *mapStringIntValidator {
-	return &mapStringIntValidator{
-		entry,
-		validator,
+func NewMapIntValidator(root *mapValidator, key string) *mapIntValidator {
+	return &mapIntValidator{
+		NewMapValidatorEntry(root, key),
+		NewIntValidator(),
 	}
 }
 
-func (v *mapStringIntValidator) Range(min, max int) MapStringIntValidator {
+func (v *mapIntValidator) Range(min, max int) MapIntValidator {
 	v.validator = v.validator.Range(min, max)
 	return v
 }
 
-func (v *mapStringIntValidator) Key(key string) MapStringValidator {
-	return v.root.Key(key)
-}
-
-func (v *mapStringIntValidator) validate(input interface{}) (interface{}, []error) {
-	s, ok := input.(string)
+func (v *mapIntValidator) validate(input interface{}) (interface{}, []error) {
+	s, ok := input.(int)
 	if ok {
 		return v.validator.Validate(s)
 	}
-	return input, []error{ErrNotAString}
+	return input, []error{ErrNotAInteger}
 }

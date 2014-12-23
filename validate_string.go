@@ -8,10 +8,11 @@ type stringValidator struct {
 	trim  bool
 	empty bool
 	regex string
+	fun   StringValidatorFunc
 }
 
 func NewStringValidator() StringValidator {
-	return &stringValidator{false, false, ""}
+	return &stringValidator{false, false, "", nil}
 }
 
 func (v *stringValidator) TrimSpace() StringValidator {
@@ -29,6 +30,11 @@ func (v *stringValidator) Regex(regex string) StringValidator {
 	return v
 }
 
+func (v *stringValidator) Func(fun StringValidatorFunc) StringValidator {
+	v.fun = fun
+	return v
+}
+
 func (v *stringValidator) Validate(input string) (string, []error) {
 	if v.trim {
 		input = strings.TrimSpace(input)
@@ -40,6 +46,10 @@ func (v *stringValidator) Validate(input string) (string, []error) {
 
 	if v.regex != "" {
 		panic("regex not supported yet")
+	}
+
+	if v.fun != nil {
+		return v.fun(input)
 	}
 
 	return input, nil
@@ -54,6 +64,9 @@ func (v *stringValidator) AsInt() StringIntValidator {
 	}
 }
 
+/**
+ * Attempts to parse the string as a bool
+ */
 func (v *stringValidator) AsBool() StringBoolValidator {
 	return &stringBoolValidator{
 		v, "true", "false", nil,

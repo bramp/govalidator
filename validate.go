@@ -1,20 +1,32 @@
 package govalidator
 
+type IntValidatorFunc func (input int) (output int, errors []error)
+type IntValidate interface {
+	Validate(input int) (output int, errors []error)
+}
+
 type IntValidator interface {
 	Range(min, max int) IntValidator
 
-	Validate(input int) (int, []error)
+	IntValidate
+}
+
+type StringValidatorFunc func (input string) (output string, errors []error)
+type StringValidatorCommon interface {
+	Validate(input string) (output string, errors []error)
 }
 
 type StringValidator interface {
+
 	TrimSpace() StringValidator
 	NotEmpty() StringValidator
 	Regex(regex string) StringValidator
+	Func(f StringValidatorFunc) StringValidator
 
 	AsInt() StringIntValidator
 	AsBool() StringBoolValidator
 
-	Validate(input string) (string, []error)
+	StringValidatorCommon
 }
 
 type StringIntValidator interface {
@@ -35,18 +47,27 @@ type genericMapValidator interface {
 	validateMissing() (interface{}, []error)
 }
 
-type MapValidator interface {
-	FailOnUnknown() MapValidator
+type MapValidatorCommon interface {
 
 	Key(key string) MapStringValidator
-	// TODO Add IntKey(key string) MapIntValidator
+	IntKey(key string) MapIntValidator
 
 	Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error)
 }
 
+type MapValidator interface {
+	MapValidatorCommon
+	FailOnUnknown() MapValidator
+}
+
+type MapIntValidator interface {
+	MapValidatorCommon
+
+	Range(min, max int) MapIntValidator
+}
+
 type MapStringValidator interface {
-	Key(key string) MapStringValidator
-	// TODO Add IntKey(key string) MapIntValidator
+	MapValidatorCommon
 
 	Required() MapStringValidator
 	Default(defaut interface{}) MapStringValidator
@@ -57,25 +78,18 @@ type MapStringValidator interface {
 	TrimSpace() MapStringValidator
 	NotEmpty() MapStringValidator
 	Regex(regex string) MapStringValidator
-
-	Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error)
+	Func(f StringValidatorFunc) MapStringValidator
 }
 
 type MapStringIntValidator interface {
-	Key(key string) MapStringValidator
-	// TODO Add IntKey(key string) MapIntValidator
+	MapValidatorCommon
 
 	Range(min, max int) MapStringIntValidator
-
-	Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error)
 }
 
 type MapStringBoolValidator interface {
-	Key(key string) MapStringValidator
-	// TODO Add IntKey(key string) MapIntValidator
+	MapValidatorCommon
 
 	True(true string) MapStringBoolValidator
 	False(false string) MapStringBoolValidator
-
-	Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error)
 }

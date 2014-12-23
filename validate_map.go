@@ -36,15 +36,10 @@ func (v *mapValidator) Key(key string) MapStringValidator {
 	return validator
 }
 
-func (e *mapValidatorEntry) Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error) {
-	return e.root.Validate(input)
-}
-
-func (e *mapValidatorEntry) validateMissing() (interface{}, []error) {
-	if e.required {
-		return ignoreValue, []error{ErrRequiredKeyMissing}
-	}
-	return e.defaut, nil
+func (v *mapValidator) IntKey(key string) MapIntValidator {
+	validator := NewMapIntValidator(v, key)
+	v.validators[key] = validator
+	return validator
 }
 
 func (v *mapValidator) Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error) {
@@ -85,4 +80,24 @@ func (v *mapValidator) Validate(input map[string]interface{}) (map[string]interf
 	}
 
 	return input, errs
+}
+
+
+func (e *mapValidatorEntry) Key(key string) MapStringValidator {
+	return e.root.Key(key)
+}
+
+func (e *mapValidatorEntry) IntKey(key string) MapIntValidator {
+	return e.root.IntKey(key)
+}
+
+func (e *mapValidatorEntry) Validate(input map[string]interface{}) (map[string]interface{}, map[string][]error) {
+	return e.root.Validate(input)
+}
+
+func (e *mapValidatorEntry) validateMissing() (interface{}, []error) {
+	if e.required {
+		return ignoreValue, []error{ErrRequiredKeyMissing}
+	}
+	return e.defaut, nil
 }
