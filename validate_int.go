@@ -1,14 +1,5 @@
 package govalidator
 
-import (
-	"errors"
-)
-
-var (
-	ErrTooSmall = errors.New("input is too small")
-	ErrTooLarge = errors.New("input is too large")
-)
-
 // Note the use of << to create an untyped constant.
 const bitsPerWord = 32 << uint(^uint(0)>>63)
 
