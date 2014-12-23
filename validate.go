@@ -1,12 +1,12 @@
 package govalidator
 
-type IntValidatorFunc func (input int) (output int, errors []error)
+type IntValidatorFunc func (input int64) (output int64, errors []error)
 type IntValidate interface {
-	Validate(input int) (output int, errors []error)
+	Validate(input int64) (output int64, errors []error)
 }
 
 type IntValidator interface {
-	Range(min, max int) IntValidator
+	Range(min, max int64) IntValidator
 
 	IntValidate
 }
@@ -30,9 +30,9 @@ type StringValidator interface {
 }
 
 type StringIntValidator interface {
-	Range(min, max int) StringIntValidator
+	Range(min, max int64) StringIntValidator
 
-	Validate(input string) (int, []error)
+	Validate(input string) (int64, []error)
 }
 
 type StringBoolValidator interface {
@@ -63,7 +63,7 @@ type MapValidator interface {
 type MapIntValidator interface {
 	MapValidatorCommon
 
-	Range(min, max int) MapIntValidator
+	Range(min, max int64) MapIntValidator
 }
 
 type MapStringValidator interface {
@@ -84,7 +84,7 @@ type MapStringValidator interface {
 type MapStringIntValidator interface {
 	MapValidatorCommon
 
-	Range(min, max int) MapStringIntValidator
+	Range(min, max int64) MapStringIntValidator
 }
 
 type MapStringBoolValidator interface {

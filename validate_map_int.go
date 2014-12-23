@@ -12,13 +12,13 @@ func NewMapIntValidator(root *mapValidator, key string) *mapIntValidator {
 	}
 }
 
-func (v *mapIntValidator) Range(min, max int) MapIntValidator {
+func (v *mapIntValidator) Range(min, max int64) MapIntValidator {
 	v.validator = v.validator.Range(min, max)
 	return v
 }
 
 func (v *mapIntValidator) validate(input interface{}) (interface{}, []error) {
-	s, ok := input.(int)
+	s, ok := input.(int64)
 	if ok {
 		return v.validator.Validate(s)
 	}

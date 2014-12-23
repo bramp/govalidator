@@ -1,36 +1,28 @@
 package govalidator
 
-// Note the use of << to create an untyped constant.
-const bitsPerWord = 32 << uint(^uint(0)>>63)
-
-// Implementation-specific integer limit values.
-// Taken from: http://code.google.com/p/go-bit/
-const (
-	maxInt  = 1<<(bitsPerWord-1) - 1 // either 1<<31 - 1 or 1<<63 - 1
-	minInt  = -maxInt - 1            // either -1 << 31 or -1 << 63
-	maxUint = 1<<bitsPerWord - 1     // either 1<<32 - 1 or 1<<64 - 1
-	minUint = 0
+import (
+	"math"
 )
 
 type intValidator struct {
-	min, max int
+	min, max int64
 }
 
 func NewIntValidator() IntValidator {
 	return &intValidator{
-		min: minInt,
-		max: maxInt,
+		min: math.MinInt64,
+		max: math.MaxInt64,
 	}
 }
 
-func (v *intValidator) Range(min, max int) IntValidator {
+func (v *intValidator) Range(min, max int64) IntValidator {
 	v.min = min
 	v.max = max
 
 	return v
 }
 
-func (v *intValidator) Validate(input int) (int, []error) {
+func (v *intValidator) Validate(input int64) (int64, []error) {
 	if input < v.min {
 		return input, []error{ErrTooSmall}
 	}

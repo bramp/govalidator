@@ -12,7 +12,7 @@ func NewMapStringIntValidator(entry mapValidatorEntry, validator StringIntValida
 	}
 }
 
-func (v *mapStringIntValidator) Range(min, max int) MapStringIntValidator {
+func (v *mapStringIntValidator) Range(min, max int64) MapStringIntValidator {
 	v.validator = v.validator.Range(min, max)
 	return v
 }

@@ -65,7 +65,7 @@ func TestMapValidator(t *testing.T) {
 		Key("int").AsInt().Range(1, 10)
 
 	m, errs := validator.Validate(map[string]interface{}{"key": "hello", "int": "10"})
-	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != 10 {
+	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != int64(10) {
 		t.Errorf("Failed map test %v %v\n", m, errs)
 	}
 
@@ -87,7 +87,7 @@ func TestMapRequiredValidator(t *testing.T) {
 		Key("int").Required().AsInt().Range(1, 10)
 
 	m, errs := validator.Validate(map[string]interface{}{"key": "hello", "int": "10"})
-	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != 10 {
+	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != int64(10) {
 		t.Errorf("Failed map test %v %v\n", m, errs)
 	}
 
@@ -104,12 +104,12 @@ func TestMapDefaultValidator(t *testing.T) {
 		Key("int").Default("5").AsInt().Range(1, 10)
 
 	m, errs := validator.Validate(map[string]interface{}{"key": "hello", "int": "10"})
-	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != 10 {
+	if len(errs) != 0 || len(m) != 2 || m["key"] != "hello" || m["int"] != int64(10) {
 		t.Errorf("Failed map test %v %v\n", m, errs)
 	}
 
 	m, errs = validator.Validate(map[string]interface{}{})
-	if len(errs) != 0 || len(m) != 2 || m["key"] != "blah" || m["int"] != 5 {
+	if len(errs) != 0 || len(m) != 2 || m["key"] != "blah" || m["int"] != int64(5) {
 		t.Errorf("Failed empty test %v %v\n", m, errs)
 	}
 }
@@ -144,7 +144,7 @@ func TestReadme(t *testing.T) {
 	//   "number": 10,      // Note: int not string.
 	// }
 	// and errs == nil
-	if len(errs) != 0 || len(m) != 2 || m["field"] != "value" || m["number"] != 10 {
+	if len(errs) != 0 || len(m) != 2 || m["field"] != "value" || m["number"] != int64(10) {
 		t.Errorf("Failed map test %v %v", m, errs)
 	}
 
@@ -160,7 +160,7 @@ func TestReadme(t *testing.T) {
 	//   "number": 1000,
 	// }
 	// and errs == {ErrEmpty, ErrTooLarge, ErrUnknownKey}
-	if len(errs) != 3 || len(m) != 2 || m["field"] != "" || m["number"] != 1000 {
+	if len(errs) != 3 || len(m) != 2 || m["field"] != "" || m["number"] != int64(1000) {
 		t.Errorf("Failed map test %v %v", m, errs)
 	}
 }
